@@ -1,0 +1,56 @@
+{%- liquid
+  assign source = section.settings.collection
+  if source == blank
+    assign source = collections.all
+  endif
+-%}
+
+<div class="fp-grid">
+  {% if section.settings.title != blank %}
+    <h2 class="fp-grid__title">{{ section.settings.title }}</h2>
+  {% endif %}
+
+  <div class="fp-grid__list" style="--columns: {{ section.settings.columns }};">
+    {% for product in source.products limit: section.settings.limit %}
+      <a href="{{ product.url }}" class="fp-card">
+        {% if product.featured_image %}
+          {{ product.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', alt: product.title }}
+        {% endif %}
+        <p class="fp-card__name">{{ product.title }}</p>
+        <p class="fp-card__price">{{ product.price | money }}</p>
+      </a>
+    {% else %}
+      <p>Chưa có sản phẩm nào trong bộ sưu tập này.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .fp-grid { padding: 40px 24px; }
+  .fp-grid__title { text-align: center; margin: 0 0 24px; }
+  .fp-grid__list {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), 1fr);
+    gap: 24px;
+  }
+  .fp-card { text-decoration: none; color: inherit; }
+  .fp-card img { width: 100%; height: auto; display: block; }
+  .fp-card__name { margin: 8px 0 0; font-weight: 600; }
+  .fp-card__price { margin: 4px 0 0; }
+  @media (max-width: 749px) {
+    .fp-grid__list { grid-template-columns: repeat(2, 1fr); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Featured products grid",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Heading", "default": "Sản phẩm nổi bật" },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "limit", "label": "Số sản phẩm", "min": 2, "max": 12, "step": 1, "default": 4 },
+    { "type": "range", "id": "columns", "label": "Số cột (máy tính)", "min": 2, "max": 4, "step": 1, "default": 4 }
+  ],
+  "presets": [{ "name": "Featured products grid" }]
+}
+{% endschema %}

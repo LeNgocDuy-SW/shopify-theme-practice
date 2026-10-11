@@ -13,11 +13,29 @@
   <div class="fp-grid__list" style="--columns: {{ section.settings.columns }};">
     {% for product in source.products limit: section.settings.limit %}
       <a href="{{ product.url }}" class="fp-card">
-        {% if product.featured_image %}
-          {{ product.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', alt: product.title }}
-        {% endif %}
+        <div class="fp-card__media">
+          {% if product.featured_image %}
+            {{ product.featured_image | image_url: width: 500 | image_tag: loading: 'lazy', alt: product.title }}
+          {% endif %}
+
+          {% if product.available == false %}
+            <span class="fp-badge fp-badge--soldout">Hết hàng</span>
+          {% elsif product.compare_at_price > product.price %}
+            {%- liquid
+              assign saved = product.compare_at_price | minus: product.price
+              assign percent = saved | times: 100.0 | divided_by: product.compare_at_price | round
+            -%}
+            <span class="fp-badge">-{{ percent }}%</span>
+          {% endif %}
+        </div>
+
         <p class="fp-card__name">{{ product.title }}</p>
-        <p class="fp-card__price">{{ product.price | money }}</p>
+        <p class="fp-card__price">
+          {{ product.price | money }}
+          {% if product.compare_at_price > product.price %}
+            <s class="fp-card__old">{{ product.compare_at_price | money }}</s>
+          {% endif %}
+        </p>
       </a>
     {% else %}
       <p>Chưa có sản phẩm nào trong bộ sưu tập này.</p>
@@ -37,6 +55,20 @@
   .fp-card img { width: 100%; height: auto; display: block; }
   .fp-card__name { margin: 8px 0 0; font-weight: 600; }
   .fp-card__price { margin: 4px 0 0; }
+  .fp-card__media { position: relative; }
+  .fp-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 10px;
+    background: #d82c0d;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+  }
+  .fp-badge--soldout { background: #555; }
+  .fp-card__old { margin-left: 8px; opacity: 0.6; }
   @media (max-width: 749px) {
     .fp-grid__list { grid-template-columns: repeat(2, 1fr); }
   }
